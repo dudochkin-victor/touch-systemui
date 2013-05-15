@@ -1,0 +1,6 @@
+<aegis>
+  <request>
+    <credential name="usb-moded::USBControl" />
+    <for path="/usr/bin/sysuid" />
+  </request>
+</aegis>
