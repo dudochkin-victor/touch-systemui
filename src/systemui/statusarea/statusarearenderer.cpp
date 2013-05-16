@@ -21,8 +21,12 @@
 #include "statusarearenderer.h"
 #include <MStyle>
 #include "statusareastyle.h"
+
+#if MEEGO
 #include <QMeeGoLivePixmap>
 #include <QMeeGoGraphicsSystemHelper>
+#endif
+
 #include <QX11Info>
 #include "x11wrapper.h"
 
@@ -101,14 +105,16 @@ bool StatusAreaRenderer::createBackPixmap()
         delete statusAreaLivePixmap;
         statusAreaLivePixmap = NULL;
     }
-
+#if MEEGO
     if (QMeeGoGraphicsSystemHelper::isRunningMeeGo()) {
         // FIXME: Round up to the nearest multiple of eight until NB#231246 is fixed
         int livePixmapWidth = (statusAreaWidth / 8 + 1) * 8;
 
         statusAreaLivePixmap = QMeeGoLivePixmap::livePixmapWithSize(livePixmapWidth, statusAreaHeight, QMeeGoLivePixmap::Format_ARGB32_Premultiplied);
         backPixmap = QPixmap::fromX11Pixmap(statusAreaLivePixmap->handle(), QPixmap::ExplicitlyShared);
-    } else {
+    } else 
+#endif
+    {
         backPixmap = QPixmap(statusAreaWidth, statusAreaHeight);
     }
 
@@ -226,10 +232,11 @@ void StatusAreaRenderer::accumulateSceneChanges(const QList<QRectF> &region)
 void StatusAreaRenderer::renderAccumulatedRegion()
 {
     if (!accumulatedRegion.isEmpty() && !statusAreaPixmap.isNull() && !backPixmap.isNull()) {
+#if MEEGO	
         if (statusAreaLivePixmap && !QMeeGoGraphicsSystemHelper::isRunningMeeGo()) {
             QMeeGoGraphicsSystemHelper::switchToMeeGo();
         }
-
+#endif
         // Don't draw areas that are outside the pixmap
         if(accumulatedRegion.intersects(statusAreaPixmap.rect())) {
             QPainter painter;
@@ -237,12 +244,16 @@ void StatusAreaRenderer::renderAccumulatedRegion()
             QImage *image = NULL;
 
             if (statusAreaLivePixmap) {
+#if MEEGO
                 image = statusAreaLivePixmap->lock();
+#endif
 
                 // FIXME: This shouldn't be needed after NB#231260 is fixed
                 if (image->isNull()) {
                     createBackPixmap();
+#if MEEGO                    
                     image = statusAreaLivePixmap->lock();
+#endif                    
                 }
 
                 painter.begin(image);
@@ -255,11 +266,11 @@ void StatusAreaRenderer::renderAccumulatedRegion()
                 scene->render(&painter, sourceRect, sourceRect);
             }
             painter.end();
-
+#if MEEGO
             if (statusAreaLivePixmap) {
                 statusAreaLivePixmap->release(image);
             }
-
+#endif
             painter.begin(&statusAreaPixmap);
             painter.drawPixmap(sourceRect, backPixmap, sourceRect);
             painter.end();

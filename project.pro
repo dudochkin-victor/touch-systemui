@@ -8,7 +8,7 @@ addSubDirs(mkspecs)
 addSubDirs(themes)
 addSubDirs(translations)
 addSubDirs(demos)
-addSubDirs(tests)
+#addSubDirs(tests)
 CONFIG(docs) {
     addSubDirs(doc)
 }

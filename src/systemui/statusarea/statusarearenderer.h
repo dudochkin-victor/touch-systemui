@@ -32,8 +32,11 @@
 
 class QGraphicsScene;
 class StatusArea;
+#if MEEGO
 class QMeeGoLivePixmap;
-
+#else
+class QPixmap;
+#endif
 /*!
  *  StatusAreaRenderer renders the contents of the scene to a shared pixmap which is then shown by libmeegotouch.
  */
@@ -121,7 +124,11 @@ private:
     //! Back buffer pixmap - the content is first rendered here and then copied to the shared pixmap
     QPixmap backPixmap;
     //! Used for better performance if MeeGo graphics system is available, wrapped by backPixmap
+#if MEEGO    
     QMeeGoLivePixmap* statusAreaLivePixmap;
+#else
+    QPixmap* statusAreaLivePixmap;
+#endif
 
     //! Creates a shared pixmap for status area
     bool createSharedPixmapHandle();
